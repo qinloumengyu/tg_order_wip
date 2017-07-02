@@ -1,0 +1,66 @@
+{% load configs_extras %}
+<table class="table table-bordered table-condensed">
+    <thead>
+    <tr>
+        <th rowspan="2"></th>
+        <th rowspan="2">订单号</th>
+        <th rowspan="2">图号</th>
+        <th rowspan="2">名称</th>
+        <th rowspan="2">版本</th>
+        {% for x in cc.stdstepls %}
+        {% for k, v in x.items%}
+            {% if forloop.counter == 2 %}
+            <th colspan="4" class="active"><b>{{ v }}</b></th>
+            {% endif %}
+        {% endfor %}
+        {% endfor %}
+    </tr>
+    <tr>
+        {% for x in cc.stdstepls %}
+        <th>1</th>
+        <th>2</th>
+        <th>3</th>
+        <th>4</th>
+        {% endfor %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for x in cc.content %}
+    {% if x.Order__Name != None %}
+    {% for k, v in x.ssd.items %}
+        <tr>
+        {% if forloop.first %}
+            <td>{{ forloop.parentloop.counter }}</td>
+       
+            <td>
+                {{ x.Order__Name }}
+            </td>
+            <td>
+                {{ x.Drawing__DrawingName }}
+            </td>
+            <td>
+                {{ x.Drawing__Dn_a }}
+            </td>
+            <td>
+                {{ x.Drawing__Dn_b }}
+            </td>
+        {% endif %}
+            {% for x in cc.stdstepls %}
+            <td>0</td>
+            <td>0</th>
+            <td>0</td>
+            <td>0</th>
+            {% endfor %} 
+        </tr>
+    {% endfor %}
+    {% endif %}
+    {% endfor %}
+    <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    </tbody>
+</table>

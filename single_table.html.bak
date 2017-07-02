@@ -1,0 +1,66 @@
+{% load configs_extras %}
+<table class="table table-bordered table-condensed">
+    <thead>
+    <tr>
+        <th rowspan="2"></th>
+        <th rowspan="2">订单号</th>
+        <th rowspan="2">图号</th>
+        <th rowspan="2">名称</th>
+        <th rowspan="2">版本</th>
+        {% for x in cc.stdstepls %}
+        {% for k, v in x.items%}
+            {% if forloop.counter == 2 %}
+            <th colspan="4" class="active"><b>{{ v }}</b></th>
+            {% endif %}
+        {% endfor %}
+        {% endfor %}
+    </tr>
+    <tr>
+    {% for x in cc.stdstepls %}
+        <th>历史累计</th>
+        <th>当日累计</th>
+        <th>累计超欠</th>
+        <th>结批日期</th>
+    {% endfor %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for x in cc.content %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>
+                {{ x.Order__Name }}
+            </td>
+            <td>
+                {{ x.Drawing__DrawingName }}
+            </td>
+            <td>
+                {{ x.Drawing__Dn_a }}
+            </td>
+            <td>
+                {{ x.Drawing__Dn_b }}
+            </td>
+            {% for s in x.table %}
+            {% if s.0 == 0 and s.1 == 0 %}
+            <td> </td>
+            <td> </td>
+            <td> </td>
+            <td> </td>
+            {% else %}
+            <td>{{ s.0 }}</td>
+            <td>{{ s.1 }} </td>
+            <td> </td>
+            <td> </td>
+            {% endif %}
+            {% endfor %} 
+        </tr>
+    {% endfor %}
+    <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    </tbody>
+</table>
