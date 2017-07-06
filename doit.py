@@ -3,7 +3,7 @@ from django.template.loader import render_to_string
 from django.db.models import Q
 from erp_configs import configs
 from mesy import models as dbmodels
-import datetime, erpapputils, html_table_to_excel
+import datetime, erpapputils, html_table_to_excel, calendar
 
 MAX_DAYS = 7
 
@@ -24,7 +24,14 @@ def do_trigger_positive(request, crondef, parampath):
         tydate = erpapputils.convert_datetimestr2dt(request_form.get('tydate', ''))
     except Exception, e:
         tydate = datetime.datetime.today()
-        
+    
+    tydate_year = tydate.year 
+    tydate_month = tydate.month
+    monthrange = calendar.monthrange(tydate.year,tydate.month)
+
+    if tydate_year != datetime.datetime.today().year or tydate_month != datetime.datetime.today().month:
+        tydate = datetime.datetime(year = tydate_year, month = tydate_month, day = monthrange[1])
+   
     sdate = tydate - datetime.timedelta(days=1)
     edate = tydate + datetime.timedelta(days=1)
 
@@ -172,12 +179,12 @@ def do_trigger_positive(request, crondef, parampath):
         if parampath == 'search':
             return subobj
         elif parampath == 'searchexcel':
-            table_str = render_to_string('qyn_test/single_table.html', {
+            table_str = render_to_string('tg_order_wip/single_table.html', {
                 'cc': subobj
             })
             return html_table_to_excel.export_to_xls(table_str, True)
         else:
-            return TemplateResponse(request, 'qyn_test/single_printable.html', {
+            return TemplateResponse(request, 'tg_order_wip/single_printable.html', {
                 'cc': subobj
             })
 

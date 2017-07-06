@@ -49,7 +49,7 @@
 
                 <div class="col-sm-6">
                     <div class='input-group date form_date'>
-                    <input type="text" name="tydate" class="form-control input-sm" readonly="readonly" value="{{ cc.tydate|date:'Y-m-d' }}">
+                    <input type="text" name="tydate" class="form-control input-sm" readonly="readonly">
                     <span class="input-group-addon input-sm">  
                         <span class="glyphicon glyphicon-calendar"></span>  
                     </span>  
@@ -67,7 +67,7 @@
             </div>
         </form>
     </div>
-    {% include 'tg_order_wip/single_table.html' %}
+    {% include 'qyn_test/single_table.html' %}
 {% endblock %}
 
 {% block hjs %}
@@ -88,8 +88,8 @@
                 filterBehavior: 'text',
                 nonSelectedText: '全选'
             });
-            $('input[name="tydate"]').datetimepicker({
-                format: 'yyyy-mm-dd',  
+            $('input[name="tydate"]').datepicker({
+                format: 'yyyy-mm',  
                 weekStart: 1,  
                 autoclose: true,  
                 startView: 3,  

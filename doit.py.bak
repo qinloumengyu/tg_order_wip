@@ -33,6 +33,9 @@ def do_trigger_positive(request, crondef, parampath):
     # showcontent
     showcontent = int(request_form.get('showcontent', 0))
 
+    sum_t = [[0,0,0,0] for i in range(table_len)]
+    sum_quantity = 0
+
     subobj = {
         'stdstepls': stdstepls,
         'request_form': request_form,
@@ -62,7 +65,7 @@ def do_trigger_positive(request, crondef, parampath):
 
         flowins = flowins.exclude(Inner__Complete_date__lt=tydate)
 
-        fils = list(flowins.values('id', 'Inner', 'Inner__DrawingNO', 'Inner__Remark', 'To_type', 'Inner__Order_drawing__Order__OrderName',
+        fils = list(flowins.values('id', 'Inner', 'Inner__DrawingNO', 'Inner__Remark', 'To_type', 'Inner__Order_drawing__Quantity','Inner__Order_drawing__Order__OrderName',
             'Inner__Drawing__DrawingName', 'Inner__Drawing__Dn_a', 'Inner__Drawing__Dn_b', 'Inner__Drawing__Dn_c',
             'Create_date', 'Quantity', 'Out__Plan_step', 'Out__Plan_step__Name'))
 
@@ -92,8 +95,9 @@ def do_trigger_positive(request, crondef, parampath):
                     'Drawing__Dn_a': f['Inner__Drawing__Dn_a'],
                     'Drawing__Dn_b': f['Inner__Drawing__Dn_b'],
                     'Drawing__Dn_c': f['Inner__Drawing__Dn_c'],
-
-                    'table': [[0,0,0,0] for i in range(16)],
+                    'Create_date': f['Create_date'],
+                    'Order_drawing__Quantity': f['Inner__Order_drawing__Quantity'],
+                    'table': [[0,0,0,0] for i in range(table_len)],
                     'ssd': {},
                     'ssdlen': 0,
                 }
@@ -105,6 +109,7 @@ def do_trigger_positive(request, crondef, parampath):
             if sskey not in ssd:
                 ssd[sskey] = {
                     'step': '',
+                    'endtime': '',
                     'position': 0,
                     'lastcount': 0,
                     'nowcount': 0,
@@ -131,7 +136,8 @@ def do_trigger_positive(request, crondef, parampath):
             mm['step'] = f['Out__Plan_step__Name']
             mm['lastcount'] = mm['lastcount'] + mm['cq'][0]
             mm['nowcount'] = mm['cq'][1]
-            set_position(innerdict[finner],mm,stdstepls)
+            mm['endtime'] = f['Create_date']
+            set_position(tydate,innerdict[finner],mm,stdstepls,table_len)
 
             if bhideno:
                 mm['bhide'] = mm['lastcount'] == mm['nowcount']
@@ -141,6 +147,16 @@ def do_trigger_positive(request, crondef, parampath):
         subobj['edate'] = edate
         subobj['stepids'] = stepids
         subobj['tt_cq'] = tt_cq
+
+        for x in range(table_len):
+            for y in subobj['content']:
+                sum_t[x][0] += y['table'][x][0]
+                sum_t[x][1] += y['table'][x][1]
+                sum_t[x][2] += y['table'][x][2]
+        subobj['sum_t'] = sum_t
+        for y in subobj['content']:
+            sum_quantity += y['Order_drawing__Quantity']
+        subobj['sum_quantity'] = sum_quantity
 
         # show, change cq
         if showcontent == 1:
@@ -167,12 +183,29 @@ def do_trigger_positive(request, crondef, parampath):
 
     return subobj
 
-def set_position(inner,mm, stdstepls):
+def set_position(tydate,inner,mm, stdstepls,table_len):
 
-    i = 0
+    #i = 0
+    j = 0
+    k = -1
     for step in stdstepls:
-        i += 1
         if(step.get('Name') == mm['step']):
-            mm['position'] = i
-    inner['table'][mm['position']-1][0] = mm['lastcount']
-    inner['table'][mm['position']-1][1] = mm['nowcount']
+            mm['position'] = j
+            inner['table'][j][0] = mm['nowcount']
+            inner['table'][j][1] = mm['nowcount'] + mm['lastcount']
+            inner['table'][j][3] = mm['endtime']
+        j += 1
+
+    for i in range(table_len):
+        if inner['table'][i][1] != 0:
+            if i == 0:
+                inner['table'][i][2] = inner['table'][i][1] - inner['Order_drawing__Quantity']
+            else:
+                for t in range(i)[::-1]:
+                    if inner['table'][t][1] != 0:
+                        inner['table'][i][2] = inner['table'][i][1] - inner['table'][t][1]
+                        k = 1
+                        break
+                if k == -1:
+                    inner['table'][i][2] = inner['table'][i][1] - inner['Order_drawing__Quantity']
+
