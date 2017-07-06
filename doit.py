@@ -31,6 +31,8 @@ def do_trigger_positive(request, crondef, parampath):
 
     if tydate_year != datetime.datetime.today().year or tydate_month != datetime.datetime.today().month:
         tydate = datetime.datetime(year = tydate_year, month = tydate_month, day = monthrange[1])
+
+    firstDay = datetime.datetime(year = tydate_year, month = tydate_month, day = 1)
    
     sdate = tydate - datetime.timedelta(days=1)
     edate = tydate + datetime.timedelta(days=1)
@@ -69,8 +71,8 @@ def do_trigger_positive(request, crondef, parampath):
             flowins = flowins.filter(Q(Inner__Drawing__DrawingName__icontains=product) | Q(Inner__Drawing__Dn_a__icontains=product) | Q(Inner__Drawing__Dn_b__icontains=product) | Q(Inner__Drawing__Dn_c__icontains=product))
 
         # more or less
-
-        flowins = flowins.exclude(Inner__Complete_date__lt=tydate)
+        flowins = flowins.exclude(Inner__Complete_date__lt=firstDay)
+        flowins = flowins.exclude(Inner__Complete_date__gt=tydate)
 
         fils = list(flowins.values('id', 'Inner', 'Inner__DrawingNO', 'Inner__Remark', 'To_type', 'Inner__Order_drawing__Quantity','Inner__Order_drawing__Order__OrderName',
             'Inner__Drawing__DrawingName', 'Inner__Drawing__Dn_a', 'Inner__Drawing__Dn_b', 'Inner__Drawing__Dn_c',
