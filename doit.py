@@ -3,7 +3,7 @@ from django.template.loader import render_to_string
 from django.db.models import Q
 from erp_configs import configs
 from mesy import models as dbmodels
-import datetime, erpapputils, html_table_to_excel, calendar
+import datetime, erpapputils, html_table_to_excel, calendar, copy
 
 MAX_DAYS = 7
 
@@ -13,18 +13,24 @@ def do_trigger_positive(request, crondef, parampath):
 
     @param crondef :    model.RP_RULE_CRON
     '''
+    request_form = request.REQUEST
     vcons = configs.get_values_values(request, ['PNAME_A', 'PNAME_B', 'PNAME_C', 'FLOW__REMARKS'])
     stdstep = dbmodels.STA_STEP.objects.filter(Available=True, company=crondef.company)
+    stepids = [int(x) for x in request_form.getlist('steps')]
+    mystep = stdstep.filter(id__in=stepids)
+    mystepls = list(mystep.values('id','Name'))
     stdstepls = list(stdstep.values('id', 'Name'))
-    table_len = len(stdstepls)
-
-    request_form = request.REQUEST
+    if len(mystepls) == 0:
+        mystepls = copy.deepcopy(stdstepls)
+    #table_len = len(stdstepls)
+    table_len = len(mystepls)
 
     try:
         tydate = erpapputils.convert_datetimestr2dt(request_form.get('tydate', ''))
     except Exception, e:
         tydate = datetime.datetime.today()
     
+    tydate = datetime.datetime.today()
     tydate_year = tydate.year 
     tydate_month = tydate.month
     monthrange = calendar.monthrange(tydate.year,tydate.month)
@@ -46,6 +52,8 @@ def do_trigger_positive(request, crondef, parampath):
     sum_quantity = 0
 
     subobj = {
+        'mystepls': mystepls,
+        'stepids': stepids,
         'stdstepls': stdstepls,
         'request_form': request_form,
         'showcontent': showcontent,
@@ -55,7 +63,6 @@ def do_trigger_positive(request, crondef, parampath):
 
     if parampath in ['search', 'searchandprint', 'searchexcel']:
         # steps
-        stepids = [int(x) for x in request_form.getlist('steps')]
         flowins = dbmodels.FLOWINX.objects.filter(Available=True, company=request.user.company,
             Out__ReworkIn__isnull=True, Inner__Available=True).order_by('Create_date')
         if stepids:
@@ -146,7 +153,7 @@ def do_trigger_positive(request, crondef, parampath):
             mm['lastcount'] = mm['lastcount'] + mm['cq'][0]
             mm['nowcount'] = mm['cq'][1]
             mm['endtime'] = f['Create_date']
-            set_position(tydate,innerdict[finner],mm,stdstepls,table_len)
+            set_position(tydate,innerdict[finner],mm,mystepls,table_len)
 
             if bhideno:
                 mm['bhide'] = mm['lastcount'] == mm['nowcount']
@@ -192,12 +199,12 @@ def do_trigger_positive(request, crondef, parampath):
 
     return subobj
 
-def set_position(tydate,inner,mm, stdstepls,table_len):
+def set_position(tydate,inner,mm, mystepls,table_len):
 
     #i = 0
     j = 0
     k = -1
-    for step in stdstepls:
+    for step in mystepls:
         if(step.get('Name') == mm['step']):
             mm['position'] = j
             inner['table'][j][0] = mm['nowcount']

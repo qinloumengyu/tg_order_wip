@@ -9,7 +9,7 @@
         <th rowspan="2">版本</th>
         <th rowspan="2">投入计划</th>
         <th rowspan="2">投产时间</th>
-        {% for x in cc.stdstepls %}
+        {% for x in cc.mystepls %}
         {% for k, v in x.items%}
             {% if forloop.counter == 2 %}
             <th colspan="4" class="active"><b>{{ v }}</b></th>
@@ -18,7 +18,7 @@
         {% endfor %}
     </tr>
     <tr>
-    {% for x in cc.stdstepls %}
+    {% for x in cc.mystepls %}
         <th>当日累计</th>
         <th>总累计</th>
         <th>累计超欠</th>
@@ -31,7 +31,7 @@
         <tr>
             <td>{{ forloop.counter }}</td>
             <td>
-                {{ x.Order__Name }}
+                {{ x.Order_Name }}
             </td>
             <td>
                 {{ x.Drawing__DrawingName }}
