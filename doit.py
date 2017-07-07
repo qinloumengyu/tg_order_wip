@@ -29,8 +29,8 @@ def do_trigger_positive(request, crondef, parampath):
         tydate = erpapputils.convert_datetimestr2dt(request_form.get('tydate', ''))
     except Exception, e:
         tydate = datetime.datetime.today()
-    
-    tydate = datetime.datetime.today()
+
+    #tydate = datetime.datetime.today() 
     tydate_year = tydate.year 
     tydate_month = tydate.month
     monthrange = calendar.monthrange(tydate.year,tydate.month)
@@ -207,7 +207,10 @@ def set_position(tydate,inner,mm, mystepls,table_len):
     for step in mystepls:
         if(step.get('Name') == mm['step']):
             mm['position'] = j
-            inner['table'][j][0] = mm['nowcount']
+            if tydate.year != datetime.datetime.today().year or tydate.month != datetime.datetime.today().month:
+                inner['table'][j][0] = 0
+            else:
+                inner['table'][j][0] = mm['nowcount']
             inner['table'][j][1] = mm['nowcount'] + mm['lastcount']
             inner['table'][j][3] = mm['endtime']
         j += 1
